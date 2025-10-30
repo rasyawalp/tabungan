@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tabungan</title>
   <style>
-    :root{
+    :root {
       --bg1:#dbeafe;--bg2:#f0f9ff;--accent:#2563eb;--danger:#dc2626;
       --card:#fff;--muted:#6b7280;
     }
@@ -18,37 +18,26 @@
       display:flex;flex-direction:column;align-items:center;
     }
     h1{margin:6px 0 18px;color:var(--accent)}
-    .container{width:95%;max-width:1100px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+    .container{width:95%;max-width:720px}
     .card{
       background:var(--card);
       border-radius:12px;
       box-shadow:0 6px 18px rgba(2,6,23,0.08);
       padding:16px;
     }
-    .left{flex:1 1 620px;min-width:280px;max-width:720px}
-    .right{flex:0 1 360px;min-width:260px;max-width:380px;text-align:center}
     label{display:block;font-weight:600;color:#1e3a8a;margin-bottom:6px}
-    input[type="text"],input[type="number"],input[type="password"]{
+    input[type="text"],input[type="number"]{
       width:100%;padding:10px;border-radius:8px;border:1px solid #cfe7ff;margin-bottom:10px;
     }
     .btn{background:var(--accent);color:white;border:none;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:600}
     .btn:hover{filter:brightness(.95)}
-    .btn-danger{background:var(--danger)}
     .tabungan-item{
       margin-top:12px;padding:14px;border-radius:10px;background:#f8fbff;border:1px solid #e6f0ff;
     }
     .small{font-size:13px;color:var(--muted)}
-    .meta{font-size:12px;color:var(--muted);margin-top:6px}
     .progress-container{background:#eef5ff;border-radius:8px;overflow:hidden;height:14px;margin-top:8px}
     .progress-bar{height:100%;width:0%;transition:width .6s ease;background:linear-gradient(90deg,#3b82f6,#60a5fa)}
-    .status-badge{
-      display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px;
-    }
-    .status-pending{background:#fff7ed;color:#92400e;border:1px solid #ffedd5}
-    .status-verified{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
-    .status-rejected{background:#fff1f2;color:#831843;border:1px solid #fecdd3}
-    .total{margin-top:12px;font-weight:800;color:#0b4cd6}
-    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .action-box{
       flex:1 1 45%;background:white;border:1px solid #e0e7ff;border-radius:8px;padding:6px;
       display:flex;align-items:center;justify-content:center;gap:6px;
@@ -57,26 +46,14 @@
     }
     .action-box:hover{background:#eff6ff}
     .action-box.danger{color:#dc2626}
-    .verify-buttons{
-      display:flex;gap:10px;margin-top:8px;align-items:center;justify-content:flex-start
-    }
-    .verify-buttons button{
-      padding:6px 10px;border-radius:8px;font-weight:600;border:none;cursor:pointer
-    }
-    .verify-ok{background:#10b981;color:white}
-    .verify-no{background:#ef4444;color:white}
-    @media (max-width:800px){
-      .container{flex-direction:column;align-items:stretch}
-      .right{max-width:100%}
-    }
+    .total{margin-top:12px;font-weight:800;color:#0b4cd6}
   </style>
 </head>
 <body>
   <h1>💰 Tabungan</h1>
 
   <div class="container">
-    <!-- LEFT SIDE -->
-    <div class="card left">
+    <div class="card">
       <h2>Tambah Jenis Tabungan</h2>
       <label>Nama Tabungan</label>
       <input id="namaTabungan" type="text" placeholder="Contoh: Rumah, Liburan, Dana Kuliah">
@@ -86,38 +63,11 @@
 
       <div id="daftarTabungan" style="margin-top:18px"></div>
       <div class="total" id="totalSemua">Total terkumpul: Rp 0</div>
-      <div class="small">Tanda ✅❌ hanya bisa diatur oleh admin.</div>
-
-      <!-- Backup & Restore -->
-      <div class="actions" style="margin-top:16px">
-        <div class="action-box" onclick="downloadData()">💾 Simpan</div>
-        <label class="action-box" style="cursor:pointer">
-          📂 Unggah
-          <input type="file" id="uploadInput" accept=".json" style="display:none" onchange="uploadData(event)">
-        </label>
-      </div>
-    </div>
-
-    <!-- RIGHT SIDE (ADMIN LOGIN) -->
-    <div class="card right">
-      <h2>🔒 Panel Pengecekan</h2>
-      <div id="loginArea">
-        <div class="small">Masuk sebagai admin untuk melakukan verifikasi.</div>
-        <input id="passwordCheck" type="password" placeholder="Kata sandi admin">
-        <button class="btn" onclick="cekPassword()">Masuk</button>
-      </div>
-
-      <div id="adminInfo" style="display:none; margin-top:12px">
-        <b>Admin aktif ✅</b>
-        <div class="small" style="margin-top:8px">Kamu bisa menandai data dengan ✅ atau ❌</div>
-        <button style="margin-top:12px" class="btn btn-danger" onclick="logoutAdmin()">Logout</button>
-      </div>
     </div>
   </div>
 
   <script>
     let tabunganList = JSON.parse(localStorage.getItem('tabunganList') || '[]');
-    let isAdmin = false;
 
     function simpan(){
       localStorage.setItem('tabunganList', JSON.stringify(tabunganList));
@@ -131,43 +81,20 @@
         total += t.terkumpul;
         const persen = t.target?Math.min((t.terkumpul/t.target)*100,100).toFixed(1):0;
         const item=document.createElement('div');item.className='tabungan-item';
-
-        // status badge
-        let badge='';
-        if(t.status==='pending') badge='<span class="status-badge status-pending">PENDING</span>';
-        else if(t.status==='verified') badge='<span class="status-badge status-verified">VERIFIED ✅</span>';
-        else badge='<span class="status-badge status-rejected">REJECTED ❌</span>';
-
         item.innerHTML=`
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="flex:1">
-              <div style="font-weight:800">${escapeHtml(t.nama)}</div>
-              <div class="small">Rp ${fmt(t.terkumpul)} / Rp ${fmt(t.target)} — ${persen}%</div>
-              <div class="progress-container"><div class="progress-bar" style="width:${persen}%;"></div></div>
-            </div>
-            <div>${badge}</div>
-          </div>
-          <div class="meta">${t.verifiedBy?`Ditandai oleh <b>${t.verifiedBy}</b> pada ${new Date(t.verifiedAt).toLocaleString()}`:''}</div>
-
+          <div style="font-weight:800">${escapeHtml(t.nama)}</div>
+          <div class="small">Rp ${fmt(t.terkumpul)} / Rp ${fmt(t.target)} — ${persen}%</div>
+          <div class="progress-container"><div class="progress-bar" style="width:${persen}%;"></div></div>
           <div class="actions">
             <div class="action-box" onclick="tambahUang(${i})">➕ Tambah</div>
             <div class="action-box" onclick="kurangiUang(${i})">➖ Kurangi</div>
             <div class="action-box" onclick="editTabungan(${i})">✏️ Edit</div>
             <div class="action-box danger" onclick="hapusTabungan(${i})">🗑️ Hapus</div>
           </div>
-
-          ${isAdmin ? `
-          <div class="verify-buttons">
-            <button class="verify-ok" onclick="verify(${i},'verified')">✅ Ceklis</button>
-            <button class="verify-no" onclick="verify(${i},'rejected')">❌ Silang</button>
-          </div>` : ``}
         `;
         c.appendChild(item);
       });
       document.getElementById('totalSemua').textContent=`Total terkumpul: Rp ${fmt(total)}`;
-
-      document.getElementById('loginArea').style.display=isAdmin?'none':'block';
-      document.getElementById('adminInfo').style.display=isAdmin?'block':'none';
     }
 
     // CRUD
@@ -175,7 +102,7 @@
       const nama = document.getElementById('namaTabungan').value.trim();
       const target = parseFloat(document.getElementById('targetTabungan').value);
       if(!nama || isNaN(target) || target<=0){alert('Isi nama & target valid');return;}
-      tabunganList.push({nama,target,terkumpul:0,status:'pending',verifiedBy:null,verifiedAt:null});
+      tabunganList.push({nama,target,terkumpul:0});
       document.getElementById('namaTabungan').value='';
       document.getElementById('targetTabungan').value='';
       simpan();
@@ -185,9 +112,6 @@
       const n=parseFloat(val);
       if(isNaN(n)||n<=0)return alert('Nominal tidak valid');
       tabunganList[i].terkumpul+=n;
-      tabunganList[i].status='pending';
-      tabunganList[i].verifiedBy=null;
-      tabunganList[i].verifiedAt=null;
       simpan();
     }
     function kurangiUang(i){
@@ -195,9 +119,6 @@
       const n=parseFloat(val);
       if(isNaN(n)||n<=0)return alert('Nominal tidak valid');
       tabunganList[i].terkumpul=Math.max(0,tabunganList[i].terkumpul-n);
-      tabunganList[i].status='pending';
-      tabunganList[i].verifiedBy=null;
-      tabunganList[i].verifiedAt=null;
       simpan();
     }
     function editTabungan(i){
@@ -205,9 +126,6 @@
       if(nama!==null&&nama.trim()!=='')tabunganList[i].nama=nama.trim();
       const target=parseFloat(prompt('Ubah target (Rp):',tabunganList[i].target));
       if(!isNaN(target)&&target>0)tabunganList[i].target=target;
-      tabunganList[i].status='pending';
-      tabunganList[i].verifiedBy=null;
-      tabunganList[i].verifiedAt=null;
       simpan();
     }
     function hapusTabungan(i){
@@ -215,63 +133,6 @@
         tabunganList.splice(i,1);
         simpan();
       }
-    }
-
-    // VERIFIKASI
-    function verify(i,status){
-      if(!isAdmin)return;
-      tabunganList[i].status=status;
-      tabunganList[i].verifiedBy='Admin';
-      tabunganList[i].verifiedAt=Date.now();
-      simpan();
-    }
-
-    // LOGIN
-    function cekPassword(){
-      const pass=document.getElementById('passwordCheck').value;
-      if(pass==='bahlilgoblok'){
-        isAdmin=true;
-        document.getElementById('passwordCheck').value='';
-        renderTabungan();
-      }else alert('Kata sandi salah!');
-    }
-    function logoutAdmin(){
-      isAdmin=false;
-      renderTabungan();
-    }
-
-    // BACKUP & RESTORE
-    function downloadData() {
-      const data = localStorage.getItem('tabunganList') || '[]';
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'tabungan.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      alert('Data berhasil disimpan ke file JSON!');
-    }
-
-    function uploadData(e) {
-      const file = e.target.files[0];
-      if (!file) return alert('Pilih file JSON terlebih dahulu.');
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const data = JSON.parse(ev.target.result);
-          if (!Array.isArray(data)) throw new Error();
-          tabunganList = data;
-          localStorage.setItem('tabunganList', JSON.stringify(tabunganList));
-          renderTabungan();
-          alert('Data berhasil dimuat dari file JSON!');
-        } catch {
-          alert('File tidak valid atau format salah.');
-        }
-        // 🔥 Fix: reset input agar file yang sama bisa diunggah lagi
-        e.target.value = "";
-      };
-      reader.readAsText(file);
     }
 
     const fmt=n=>Math.round(n).toLocaleString('id-ID');
